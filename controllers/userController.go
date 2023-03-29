@@ -13,27 +13,17 @@ func CreateUser(ctx *gin.Context) {
 	var user users.User
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		restErr := errors.RestErr{
-			Message: "invalid json body",
-			Status:  http.StatusBadRequest,
-			Error:   "bad request",
-		}
+		restErr := errors.NewBadRequestError("invalid json body")
 		ctx.JSON(restErr.Status, restErr)
 		return
 	}
 
 	result, cErr := services.CreateUser(user)
 	if cErr != nil {
-		//TODO json error
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": cErr.Error(),
-		})
+		ctx.JSON(cErr.Status, cErr)
 		return
 	}
-	ctx.JSON(http.StatusCreated, gin.H{
-		"message": "user created successfully",
-		"data":    result,
-	})
+	ctx.JSON(http.StatusCreated, result)
 
 }
 func GetUser(ctx *gin.Context) {
