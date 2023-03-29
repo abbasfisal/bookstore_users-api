@@ -3,6 +3,7 @@ package controllers
 import (
 	"bookstore_users-api/domain/users"
 	"bookstore_users-api/services"
+	"bookstore_users-api/utils/errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,11 +13,12 @@ func CreateUser(ctx *gin.Context) {
 	var user users.User
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message":         "error while unmarshaling data",
-			"error":           err,
-			"error to string": err.Error(),
-		})
+		restErr := errors.RestErr{
+			Message: "invalid json body",
+			Status:  http.StatusBadRequest,
+			Error:   "bad request",
+		}
+		ctx.JSON(restErr.Status, restErr)
 		return
 	}
 
@@ -32,7 +34,7 @@ func CreateUser(ctx *gin.Context) {
 		"message": "user created successfully",
 		"data":    result,
 	})
-	
+
 }
 func GetUser(ctx *gin.Context) {
 	ctx.String(http.StatusNotImplemented, "implement Me :)")
