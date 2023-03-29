@@ -24,16 +24,10 @@ func CreateUser(ctx *gin.Context) {
 
 	result, cErr := services.CreateUser(user)
 	if cErr != nil {
-		//TODO json error
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": cErr.Error(),
-		})
+		ctx.JSON(cErr.Status, cErr)
 		return
 	}
-	ctx.JSON(http.StatusCreated, gin.H{
-		"message": "user created successfully",
-		"data":    result,
-	})
+	ctx.JSON(http.StatusCreated, result)
 
 }
 func GetUser(ctx *gin.Context) {
