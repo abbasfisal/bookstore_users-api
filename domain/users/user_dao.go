@@ -24,6 +24,15 @@ func (user *User) Get() *errors.RestErr {
 	return nil
 }
 
-func (user User) Save() *errors.RestErr {
+func (user *User) Save() *errors.RestErr {
+	current := userDB[user.Id]
+	if current != nil {
+		if current.Email == user.Email {
+			return errors.NewBadRequestError(fmt.Sprintf("email %d already registered ", user.Id))
+		}
+		return errors.NewBadRequestError(fmt.Sprintf("user %d already exists ", user.Id))
+	}
+	userDB[user.Id] = user
+
 	return nil
 }
