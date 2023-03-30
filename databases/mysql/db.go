@@ -12,7 +12,10 @@ var (
 )
 
 func init() {
-	Db, err := sql.Open("mysql", "root:root@/golang")
+
+	var err error
+	Db, err = sql.Open("mysql", "root:root@/golang")
+
 	if err != nil {
 		panic(err.Error())
 	}
