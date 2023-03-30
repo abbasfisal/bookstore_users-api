@@ -1,9 +1,14 @@
 package users
 
 import (
+	"bookstore_users-api/databases/mysql"
 	"bookstore_users-api/utils/date"
 	"bookstore_users-api/utils/errors"
 	"fmt"
+)
+
+const (
+	InsertUserQuery = "INSERT INTO users (first_name , last_name, email ,date_created) VALUES (? ,?,?,?);"
 )
 
 var (
@@ -20,23 +25,30 @@ func (user *User) Get() *errors.RestErr {
 	user.FirstName = result.FirstName
 	user.LastName = result.LastName
 	user.Email = result.Email
-	user.CreatedAt = result.CreatedAt
+	user.DateCreated = result.DateCreated
 
 	return nil
 }
 
 func (user *User) Save() *errors.RestErr {
-	current := userDB[user.Id]
-	if current != nil {
-		if current.Email == user.Email {
-			return errors.NewBadRequestError(fmt.Sprintf("email %d already registered ", user.Id))
-		}
-		return errors.NewBadRequestError(fmt.Sprintf("user %d already exists ", user.Id))
+
+	stmt, err := mysql.Db.Prepare(InsertUserQuery)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
 	}
+	defer stmt.Close()
 
-	user.CreatedAt = date.GetNowString()
+	user.DateCreated = date.GetNowString()
 
-	userDB[user.Id] = user
+	insertResult, IErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
+	if IErr != nil {
+		return errors.NewInternalServerError(fmt.Sprintf("error while saving user : %s", IErr.Error()))
+	}
+	userId, lErr := insertResult.LastInsertId()
+	if lErr != nil {
+		return errors.NewInternalServerError(fmt.Sprintf("error while trying to get last inserted ID : %s", err.Error()))
+	}
+	user.Id = userId
 
 	return nil
 }
